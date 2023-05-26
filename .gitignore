@@ -1,0 +1,4 @@
+*.pem
+*.pub
+/config
+/node_modules
