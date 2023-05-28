@@ -2,11 +2,9 @@ import { FilterQuery } from "mongoose";
 import { get } from "lodash";
 import config from "config";
 
-
-
 import SessionModel, { SessionDocument } from "../models/session.model";
 import { verifyJwt, signJwt } from "../utils/jwt.utils";
-import UserModel from "../models/user.model";
+import { findUser } from "./user.service";
 
 export async function createSession(userId: String, userAgent: string) {
     const session = await SessionModel.create({ user: userId, userAgent })
@@ -26,12 +24,12 @@ export async function updateSession(
 
 export async function reIssueAccessToken({ refreshToken }: { refreshToken: string }) {
     const { decoded } = verifyJwt(refreshToken)
-    if (!decoded || !get(decoded, '_id'))  return false;
+    if (!decoded || !get(decoded, 'session'))  return false;
 
-    const session = await SessionModel.findById(get(decoded, '_id'))
+    const session = await SessionModel.findById(get(decoded, 'session'))
     if (!session || !session.valid) return false;
 
-    const user = await UserModel.findById({ _id: session.user })
+    const user = await findUser({ _id: session.user });
     if (!user) return false;
 
     // create access token
